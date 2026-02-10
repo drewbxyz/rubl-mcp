@@ -2,13 +2,24 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+
 pub enum RegionType {
     Country,
     Subnational1,
     Subnational2,
 }
 
-pub type ParentRegionCode = String;
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct GetRegionInfoRequest {
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+}
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct GetSubRegionsRequest {
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Bounds {
@@ -24,7 +35,7 @@ pub struct Bounds {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegionInfo {
-    pub bounds: Bounds,
+    pub bounds: Option<Bounds>,
     pub result: String,
     pub code: String,
     #[serde(rename = "type")]
@@ -34,6 +45,7 @@ pub struct RegionInfo {
     pub latitude: f64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SubRegion {
     code: String,
     name: String,

@@ -13,3 +13,9 @@ pub struct RareBird {
     #[serde(rename = "howMany", default)]
     pub count: Option<u32>,
 }
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct FetchRareRequest {
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+}
