@@ -1,0 +1,79 @@
+{
+  "manifest_version": "0.3",
+  "name": "rubl",
+  "display_name": "Rubl - eBird API MCP Server",
+  "version": "0.1.0-alpha.2",
+  "description": "eBird API MCP server for hotspots, regions, and rare bird data",
+  "long_description": "Rubl provides read-only access to the eBird API through the Model Context Protocol. Query birding hotspots by location, explore region hierarchies, discover recent rare bird sightings, and find the best places to go birding.\n\n**Privacy & Security:** This server only makes HTTP requests to the public eBird API (api.ebird.org). It does NOT access your filesystem, read/write files, or execute any commands on your system. All tools are read-only and require your eBird API key for authentication with eBird's service.",
+  "author": {
+    "name": "Drew Beamer",
+    "email": "d@drewb.xyz",
+    "url": "https://drewb.xyz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drewbxyz/rubl.git"
+  },
+  "homepage": "https://github.com/drewbxyz/rubl",
+  "documentation": "https://github.com/drewbxyz/rubl#readme",
+  "support": "https://github.com/drewbxyz/rubl/issues",
+  "keywords": [
+    "ebird",
+    "birding",
+    "birds",
+    "ornithology",
+    "wildlife",
+    "biodiversity",
+    "nature",
+    "api"
+  ],
+  "license": "MIT",
+  "privacy_policies": [
+    "https://github.com/drewbxyz/rubl#privacy--security"
+  ],
+  "server": {
+    "type": "binary",
+    "entry_point": "server/rubl",
+    "mcp_config": {
+      "command": "${__dirname}/server/rubl",
+      "args": [],
+      "env": {
+        "EBIRD_API_KEY": "${user_config.ebird_api_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_region_info",
+      "description": "Look up eBird region metadata (name, type, bounds, parent). Use when you need to resolve or validate a region code (e.g. US-NC) or get geographic bounds."
+    },
+    {
+      "name": "get_subregions",
+      "description": "List subregions (states, counties, etc.) under an eBird region. Use to drill down from country to state to county or to enumerate areas within a region."
+    },
+    {
+      "name": "fetch_rare",
+      "description": "Fetch recently reported notable/rare bird sightings for an eBird region. Returns species, location, date, and count. Use for rarity alerts or recent notable observations."
+    },
+    {
+      "name": "get_nearby_hotspots",
+      "description": "Find eBird hotspots (birding locations) by coordinates. Accepts latitude/longitude and optional radius (km) and back (days, 1-30) to filter results. Returns list of eBird hotspots with names, coordinates, and recent activity."
+    }
+  ],
+  "tools_generated": false,
+  "user_config": {
+    "ebird_api_key": {
+      "type": "string",
+      "title": "eBird API Key",
+      "description": "Your eBird API key. Get one free at https://ebird.org/api/keygen",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": [
+      "darwin"
+    ]
+  }
+}

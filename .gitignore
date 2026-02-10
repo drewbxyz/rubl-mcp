@@ -1,1 +1,6 @@
 /target
+
+# MCPB Bundle build artifacts
+*.mcpb
+mcpb-bundle/
+server/

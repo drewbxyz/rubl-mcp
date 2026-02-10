@@ -1,4 +1,4 @@
-name: Publish crate
+name: Publish crate and release
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: publish
     permissions:
-      contents: read
+      contents: write # Changed from 'read' to allow creating releases
     steps:
       - uses: actions/checkout@v4
 
@@ -32,3 +32,49 @@ jobs:
         run: cargo publish
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+
+      - name: Build MCPB bundle
+        run: |
+          # Build release binary (already built by cargo publish, but ensuring it's fresh)
+          cargo build --release
+
+          # Create bundle directory structure
+          mkdir -p mcpb-bundle/server
+
+          # Copy files to bundle
+          cp manifest.json mcpb-bundle/
+          cp target/release/rubl mcpb-bundle/server/
+          chmod +x mcpb-bundle/server/rubl
+
+          # Create .mcpb ZIP archive
+          cd mcpb-bundle
+          zip -r ../rubl.mcpb . -x "*.DS_Store"
+          cd ..
+
+          # Verify bundle was created
+          ls -lh rubl.mcpb
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: rubl.mcpb
+          generate_release_notes: true
+          append_body: true
+          body: |
+            ---
+
+            ## Installation
+
+            1. Download `rubl.mcpb` from the assets below
+            2. Open with Claude for macOS/Windows for single-click installation
+            3. Configure your eBird API key when prompted.
+
+            ## Privacy & Security
+
+            This server only makes HTTP requests to the public eBird API (api.ebird.org). It does **NOT** access your filesystem, read/write files, or execute any commands on your system. All tools are read-only.
+
+            **Note:** Claude Desktop shows a generic security warning for all MCP bundles. This is normal. Review the [source code](https://github.com/drewbxyz/rubl) to verify what the server does.
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
