@@ -1,7 +1,13 @@
 [package]
 name = "rubl"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 edition = "2024"
+description = "eBird API MCP server — Model Context Protocol server for eBird hotspots, regions, and rare bird data"
+license = "MIT"
+repository = "https://github.com/drewbxyz/rubl"
+keywords = ["ebird", "mcp", "birds", "birding", "api"]
+categories = ["api-bindings", "development-tools"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.101"
