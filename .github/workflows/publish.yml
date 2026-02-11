@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     environment: publish
     permissions:
       contents: write # Changed from 'read' to allow creating releases

@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "rubl",
   "display_name": "Rubl - eBird API MCP Server",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "eBird API MCP server for hotspots, regions, and rare bird data",
   "long_description": "Rubl provides read-only access to the eBird API through the Model Context Protocol. Query birding hotspots by location, explore region hierarchies, discover recent rare bird sightings, and find the best places to go birding.\n\n**Privacy & Security:** This server only makes HTTP requests to the public eBird API (api.ebird.org). It does NOT access your filesystem, read/write files, or execute any commands on your system. All tools are read-only and require your eBird API key for authentication with eBird's service.",
   "author": {
