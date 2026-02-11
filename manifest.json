@@ -73,7 +73,8 @@
   "compatibility": {
     "claude_desktop": ">=0.10.0",
     "platforms": [
-      "darwin"
+      "darwin",
+      "win32"
     ]
   }
 }
