@@ -1,8 +1,10 @@
+use reqwest::Method;
 use serde::{Deserialize, Serialize};
+
+use crate::api::endpoint::Endpoint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-
 pub enum RegionType {
     Country,
     Subnational1,
@@ -11,14 +13,46 @@ pub enum RegionType {
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct GetRegionInfoRequest {
+    #[serde(skip_serializing)]
     #[schemars(description = "eBird region code (e.g., US-NC)")]
     pub region_code: String,
 }
 
+impl Endpoint for GetRegionInfoRequest {
+    type Query = ();
+    type Response = RegionInfo;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("ref/region/info/{}", self.region_code)
+    }
+
+    fn query(&self) -> &Self::Query {
+        &()
+    }
+}
+
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct ListSubRegionsRequest {
+pub struct GetSubRegionsRequest {
+    #[serde(skip_serializing)]
     #[schemars(description = "eBird region code (e.g., US-NC)")]
     pub region_code: String,
+}
+
+impl Endpoint for GetSubRegionsRequest {
+    type Query = ();
+    type Response = Vec<SubRegion>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("ref/region/list/subnational2/{}", self.region_code)
+    }
+
+    fn query(&self) -> &Self::Query {
+        &()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,6 +81,6 @@ pub struct RegionInfo {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SubRegion {
-    code: String,
-    name: String,
+    pub code: String,
+    pub name: String,
 }

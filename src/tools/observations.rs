@@ -139,3 +139,103 @@ impl Endpoint for FetchHotspotRecentRequest {
         self
     }
 }
+
+// Request: Fetch recent observations of a specific species in a region
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchSpeciesRecentRequest {
+    #[serde(skip_serializing)]
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+    #[serde(skip_serializing)]
+    #[schemars(description = "Species code (e.g., barswa for Barn Swallow)")]
+    pub species_code: String,
+    #[schemars(
+        description = "Number of days back to fetch observations",
+        range(min = 1, max = 30)
+    )]
+    pub back: Option<u32>,
+}
+
+impl Endpoint for FetchSpeciesRecentRequest {
+    type Query = FetchSpeciesRecentRequest;
+    type Response = Vec<Observation>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("data/obs/{}/recent/{}", self.region_code, self.species_code)
+    }
+
+    fn query(&self) -> &Self::Query {
+        self
+    }
+}
+
+// Request: Fetch nearest recent observations of a specific species
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchSpeciesNearestRequest {
+    #[serde(skip_serializing)]
+    #[schemars(description = "Species code (e.g., barswa for Barn Swallow)")]
+    pub species_code: String,
+    #[schemars(description = "Latitude")]
+    pub lat: f32,
+    #[schemars(description = "Longitude")]
+    pub lng: f32,
+    #[schemars(description = "Search radius in kilometers (max 50)", range(min = 1, max = 50))]
+    pub dist: Option<u32>,
+    #[schemars(
+        description = "Number of days back to search",
+        range(min = 1, max = 30)
+    )]
+    pub back: Option<u32>,
+}
+
+impl Endpoint for FetchSpeciesNearestRequest {
+    type Query = FetchSpeciesNearestRequest;
+    type Response = Vec<Observation>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("data/nearest/geo/recent/{}", self.species_code)
+    }
+
+    fn query(&self) -> &Self::Query {
+        self
+    }
+}
+
+// Request: Fetch historic observations on a specific date
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchHistoricRequest {
+    #[serde(skip_serializing)]
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+    #[serde(skip_serializing)]
+    #[schemars(description = "Year (e.g., 2023)")]
+    pub year: u32,
+    #[serde(skip_serializing)]
+    #[schemars(description = "Month (1-12)")]
+    pub month: u32,
+    #[serde(skip_serializing)]
+    #[schemars(description = "Day (1-31)")]
+    pub day: u32,
+}
+
+impl Endpoint for FetchHistoricRequest {
+    type Query = ();
+    type Response = Vec<Observation>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!(
+            "data/obs/{}/historic/{}/{}/{}",
+            self.region_code, self.year, self.month, self.day
+        )
+    }
+
+    fn query(&self) -> &Self::Query {
+        &()
+    }
+}

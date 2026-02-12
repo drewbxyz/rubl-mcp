@@ -10,9 +10,11 @@ use crate::{
         FetchHotspotInfoRequest, FetchNearbyHotspotsRequest, FetchRegionHotspotsRequest,
     },
     tools::observations::{
-        FetchGeoRecentRequest, FetchHotspotRecentRequest, FetchNotableRecentRequest,
-        FetchRegionRecentRequest,
+        FetchGeoRecentRequest, FetchHistoricRequest, FetchHotspotRecentRequest,
+        FetchNotableRecentRequest, FetchRegionRecentRequest, FetchSpeciesNearestRequest,
+        FetchSpeciesRecentRequest,
     },
+    tools::region::{GetRegionInfoRequest, GetSubRegionsRequest},
 };
 
 #[derive(Clone)]
@@ -156,17 +158,95 @@ impl RublClient {
         Ok(CallToolResult::success(vec![response]))
     }
 
-    // #[tool(
-    //     description = "Look up eBird region metadata (name, type, bounds, parent). Use when you need to resolve or validate a region code (e.g. US-NC) or get geographic bounds.",
-    //     annotations(title = "Region info", read_only_hint = true)
-    // )]
-    // async fn fetch_region_information(&self) {}
+    #[tool(
+        description = "Look up eBird region metadata (name, type, bounds, parent). Use when you need to resolve or validate a region code (e.g. US-NC) or get geographic bounds.",
+        annotations(title = "Region info", read_only_hint = true)
+    )]
+    async fn get_region_info(
+        &self,
+        Parameters(req): Parameters<GetRegionInfoRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
 
-    // #[tool(
-    //     description = "List subregions (states, counties, etc.) under an eBird region. Use to drill down from country to state to county or to enumerate areas within a region.",
-    //     annotations(title = "Subregions", read_only_hint = true)
-    // )]
-    // async fn list_subregions(&self) {}
+    #[tool(
+        description = "List subregions (states, counties, etc.) under an eBird region. Use to drill down from country to state to county or to enumerate areas within a region.",
+        annotations(title = "Subregions", read_only_hint = true)
+    )]
+    async fn get_subregions(
+        &self,
+        Parameters(req): Parameters<GetSubRegionsRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch recent observations of a specific species in a region. Returns observations with location, date, and count. Use for tracking a specific bird species or finding recent sightings.",
+        annotations(title = "Species observations", read_only_hint = true)
+    )]
+    async fn fetch_species_recent(
+        &self,
+        Parameters(req): Parameters<FetchSpeciesRecentRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Find nearest recent observations of a specific species by geographic coordinates. Returns observations with location, date, count, and distance. Use for finding where a species was recently seen nearby.",
+        annotations(title = "Nearest species", read_only_hint = true)
+    )]
+    async fn fetch_species_nearest(
+        &self,
+        Parameters(req): Parameters<FetchSpeciesNearestRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch historic observations on a specific date in a region. Returns observations from exactly that date. Use for exploring what was seen on a particular day in the past.",
+        annotations(title = "Historic observations", read_only_hint = true)
+    )]
+    async fn fetch_historic(
+        &self,
+        Parameters(req): Parameters<FetchHistoricRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
 }
 
 #[tool_handler]
