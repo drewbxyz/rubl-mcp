@@ -59,9 +59,9 @@ impl Endpoint for FetchRegionRecentRequest {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchGeoRecentRequest {
     #[schemars(description = "Latitude")]
-    pub lat: f32,
+    pub lat: f64,
     #[schemars(description = "Longitude")]
-    pub lng: f32,
+    pub lng: f64,
     #[schemars(
         description = "Number of days back to fetch observations",
         range(min = 1, max = 30)
@@ -178,9 +178,9 @@ pub struct FetchSpeciesNearestRequest {
     #[schemars(description = "Species code (e.g., barswa for Barn Swallow)")]
     pub species_code: String,
     #[schemars(description = "Latitude")]
-    pub lat: f32,
+    pub lat: f64,
     #[schemars(description = "Longitude")]
-    pub lng: f32,
+    pub lng: f64,
     #[schemars(description = "Search radius in kilometers (max 50)", range(min = 1, max = 50))]
     pub dist: Option<u32>,
     #[schemars(

@@ -42,14 +42,12 @@ impl RublClient {
         }
     }
 
-    #[tool(
-        description = "Fetch recently reported notable/rare bird sightings for an eBird region. Returns species, location, date, and count. Use for rarity alerts or recent notable observations.",
-        annotations(title = "Rare birds", read_only_hint = true)
-    )]
-    async fn fetch_notable_recent(
-        &self,
-        Parameters(req): Parameters<FetchNotableRecentRequest>,
-    ) -> Result<CallToolResult, McpError> {
+    /// Helper method to handle common request/response pattern
+    async fn handle_request<E>(&self, req: E) -> Result<CallToolResult, McpError>
+    where
+        E: crate::api::endpoint::Endpoint,
+        E::Response: ToContent,
+    {
         let response = self
             .client
             .send(req)
@@ -58,6 +56,17 @@ impl RublClient {
             .to_content()
             .map_err(|e| McpError::internal_error(e.to_string(), None))?;
         Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch recently reported notable/rare bird sightings for an eBird region. Returns species, location, date, and count. Use for rarity alerts or recent notable observations.",
+        annotations(title = "Rare birds", read_only_hint = true)
+    )]
+    async fn fetch_notable_recent(
+        &self,
+        Parameters(req): Parameters<FetchNotableRecentRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -68,14 +77,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchHotspotRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -86,14 +88,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchRegionRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -104,14 +99,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchGeoRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -122,14 +110,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchRegionHotspotsRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -140,14 +121,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchNearbyHotspotsRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -158,14 +132,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchHotspotInfoRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -176,14 +143,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<GetRegionInfoRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -194,14 +154,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<GetSubRegionsRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -212,14 +165,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchSpeciesRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -230,14 +176,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchSpeciesNearestRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 
     #[tool(
@@ -248,14 +187,7 @@ impl RublClient {
         &self,
         Parameters(req): Parameters<FetchHistoricRequest>,
     ) -> Result<CallToolResult, McpError> {
-        let response = self
-            .client
-            .send(req)
-            .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
-            .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
-        Ok(CallToolResult::success(vec![response]))
+        self.handle_request(req).await
     }
 }
 

@@ -71,11 +71,11 @@ impl Endpoint for FetchRegionHotspotsRequest {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchNearbyHotspotsRequest {
     #[schemars(description = "Latitude")]
-    pub lat: f32,
+    pub lat: f64,
     #[schemars(description = "Longitude")]
-    pub lng: f32,
+    pub lng: f64,
     #[schemars(description = "Radius in kilometers", range(min = 0, max = 500))]
-    pub dist: Option<f32>,
+    pub dist: Option<f64>,
     #[schemars(
         description = "Only fetch hotspots visited up to back days ago",
         range(min = 1, max = 30)

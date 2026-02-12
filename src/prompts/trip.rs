@@ -176,7 +176,7 @@ fn format_notable(observations: &[crate::tools::observations::Observation]) -> S
                 obs.scientific_name,
                 obs.location,
                 obs.observation_date,
-                obs.count.map(|c| c.to_string()).unwrap_or("X".to_string())
+                obs.count.map(|c| c.to_string()).unwrap_or_else(|| "X".to_string())
             )
         })
         .collect::<Vec<_>>()
@@ -198,7 +198,7 @@ fn format_hotspots(hotspots: &[crate::tools::hotspot::Hotspot]) -> String {
                 h.location_id,
                 h.latitude,
                 h.longitude,
-                h.num_species_all_time.map(|n| n.to_string()).unwrap_or("?".to_string())
+                h.num_species_all_time.map(|n| n.to_string()).unwrap_or_else(|| "?".to_string())
             )
         })
         .collect::<Vec<_>>()
@@ -219,7 +219,7 @@ fn format_observations(observations: &[crate::tools::observations::Observation])
                 obs.common_name,
                 obs.location,
                 obs.observation_date,
-                obs.count.map(|c| c.to_string()).unwrap_or("X".to_string())
+                obs.count.map(|c| c.to_string()).unwrap_or_else(|| "X".to_string())
             )
         })
         .collect::<Vec<_>>()
