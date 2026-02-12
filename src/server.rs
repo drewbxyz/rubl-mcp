@@ -1,7 +1,15 @@
 use rmcp::{
-    ErrorData as McpError, ServerHandler, handler::server::tool::ToolRouter,
-    handler::server::wrapper::Parameters, model::*, tool, tool_handler, tool_router,
+    ErrorData as McpError, RoleServer, ServerHandler,
+    handler::server::{
+        router::prompt::PromptRouter,
+        tool::ToolRouter,
+        wrapper::Parameters,
+    },
+    model::*, prompt, prompt_handler, prompt_router,
+    service::RequestContext, tool, tool_handler, tool_router,
 };
+
+use serde_json::Value;
 
 use crate::{
     api::client::ApiClient,
@@ -20,6 +28,7 @@ use crate::{
 #[derive(Clone)]
 pub struct RublClient {
     tool_router: ToolRouter<Self>,
+    prompt_router: PromptRouter<Self>,
     client: ApiClient,
 }
 
@@ -28,6 +37,7 @@ impl RublClient {
     pub fn new(api_key: String) -> Self {
         Self {
             tool_router: Self::tool_router(),
+            prompt_router: Self::prompt_router(),
             client: ApiClient::new(api_key),
         }
     }
@@ -249,7 +259,37 @@ impl RublClient {
     }
 }
 
+#[prompt_router]
+impl RublClient {
+    #[prompt(
+        title = "Plan Birding Day",
+        description = "Create an optimized birding itinerary for a day trip. Returns a structured hour-by-hour schedule with locations, target species, and tips based on recent sightings and hotspot data."
+    )]
+    async fn plan_birding_day(
+        &self,
+        Parameters(arguments): Parameters<Option<serde_json::Map<String, Value>>>,
+    ) -> Result<GetPromptResult, McpError> {
+        crate::prompts::trip::plan_birding_day(&self.client, &arguments.unwrap_or_default())
+            .await
+            .map_err(|e| McpError::internal_error(e, None))
+    }
+
+    #[prompt(
+        title = "Find Species",
+        description = "Find the best locations and times to see a specific bird species. Returns recommendations based on recent sightings, habitat preferences, and identification tips."
+    )]
+    async fn find_species(
+        &self,
+        Parameters(arguments): Parameters<Option<serde_json::Map<String, Value>>>,
+    ) -> Result<GetPromptResult, McpError> {
+        crate::prompts::trip::find_species(&self.client, &arguments.unwrap_or_default())
+            .await
+            .map_err(|e| McpError::internal_error(e, None))
+    }
+}
+
 #[tool_handler]
+#[prompt_handler]
 impl ServerHandler for RublClient {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
@@ -258,7 +298,10 @@ impl ServerHandler for RublClient {
                  Region codes are like US, US-NC, US-NC-067. All tools are read-only."
                     .into(),
             ),
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
+            capabilities: ServerCapabilities::builder()
+                .enable_tools()
+                .enable_prompts()
+                .build(),
             ..Default::default()
         }
     }

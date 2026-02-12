@@ -1,5 +1,6 @@
 mod api;
 mod content;
+mod prompts;
 mod server;
 
 mod tools;
