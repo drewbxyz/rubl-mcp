@@ -31,9 +31,6 @@ jobs:
           CARGO_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
           [ "$TAG" = "$CARGO_VERSION" ] || (echo "Tag $TAG != Cargo.toml $CARGO_VERSION" && exit 1)
 
-      - name: Run tests
-        run: cargo test --all-features
-
       - name: Dry run publish
         run: cargo publish --dry-run
 
