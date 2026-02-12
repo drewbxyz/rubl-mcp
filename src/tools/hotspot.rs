@@ -56,7 +56,7 @@ impl Endpoint for FetchRegionHotspotsRequest {
     const METHOD: Method = Method::GET;
 
     fn path(&self) -> String {
-        format!("ref/hotspot/region/{}", self.region_code)
+        format!("ref/hotspot/{}", self.region_code)
     }
 
     fn query(&self) -> &Self::Query {
@@ -121,5 +121,9 @@ impl Endpoint for FetchHotspotInfoRequest {
 
     fn query(&self) -> &Self::Query {
         self
+    }
+
+    fn format(&self) -> Option<&'static str> {
+        Some("json")
     }
 }
