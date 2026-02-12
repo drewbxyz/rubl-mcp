@@ -7,6 +7,11 @@ pub trait Endpoint {
 
     const METHOD: Method;
 
-    fn path(&self) -> &str;
+    fn path(&self) -> String;
     fn query(&self) -> &Self::Query;
+
+    /// Some eBird endpoints default to CSV; return `Some("json")` to force JSON.
+    fn format(&self) -> Option<&'static str> {
+        None
+    }
 }

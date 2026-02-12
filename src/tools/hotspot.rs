@@ -1,4 +1,7 @@
+use reqwest::Method;
 use serde::{Deserialize, Serialize};
+
+use crate::api::endpoint::Endpoint;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Hotspot {
@@ -34,15 +37,89 @@ pub struct Hotspot {
     pub num_checklists_all_time: Option<u32>,
 }
 
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct GetNearbyHotspotsRequest {
-    #[schemars(description = "Latitude")]
-    pub latitude: f32,
-    #[schemars(description = "Longitude")]
-    pub longitude: f32,
-    #[schemars(description = "Radius in kilometers", range(min = 0, max = 500))]
-    pub radius: Option<f32>,
-    #[schemars(description = "Only fetch hotspots visited up to back days ago", range(min = 1, max = 30))]
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchRegionHotspotsRequest {
+    #[serde(skip_serializing)]
+    #[schemars(description = "eBird region code (e.g., US-NC)")]
+    pub region_code: String,
+    #[schemars(
+        description = "Only fetch hotspots visited up to back days ago",
+        range(min = 1, max = 30)
+    )]
     pub back: Option<u32>,
-    
+}
+
+impl Endpoint for FetchRegionHotspotsRequest {
+    type Query = FetchRegionHotspotsRequest;
+    type Response = Vec<Hotspot>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("ref/hotspot/region/{}", self.region_code)
+    }
+
+    fn query(&self) -> &Self::Query {
+        self
+    }
+
+    fn format(&self) -> Option<&'static str> {
+        Some("json")
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchNearbyHotspotsRequest {
+    #[schemars(description = "Latitude")]
+    pub lat: f32,
+    #[schemars(description = "Longitude")]
+    pub lng: f32,
+    #[schemars(description = "Radius in kilometers", range(min = 0, max = 500))]
+    pub dist: Option<f32>,
+    #[schemars(
+        description = "Only fetch hotspots visited up to back days ago",
+        range(min = 1, max = 30)
+    )]
+    pub back: Option<u32>,
+}
+
+impl Endpoint for FetchNearbyHotspotsRequest {
+    type Query = FetchNearbyHotspotsRequest;
+    type Response = Vec<Hotspot>;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        "ref/hotspot/geo".into()
+    }
+
+    fn query(&self) -> &Self::Query {
+        self
+    }
+
+    fn format(&self) -> Option<&'static str> {
+        Some("json")
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct FetchHotspotInfoRequest {
+    #[serde(skip_serializing)]
+    #[schemars(description = "eBird hotspot location ID (e.g., L123456)")]
+    pub loc_id: String,
+}
+
+impl Endpoint for FetchHotspotInfoRequest {
+    type Query = FetchHotspotInfoRequest;
+    type Response = Hotspot;
+
+    const METHOD: Method = Method::GET;
+
+    fn path(&self) -> String {
+        format!("ref/hotspot/{}", self.loc_id)
+    }
+
+    fn query(&self) -> &Self::Query {
+        self
+    }
 }

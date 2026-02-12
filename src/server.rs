@@ -6,6 +6,9 @@ use rmcp::{
 use crate::{
     api::client::ApiClient,
     content::ToContent,
+    tools::hotspot::{
+        FetchHotspotInfoRequest, FetchNearbyHotspotsRequest, FetchRegionHotspotsRequest,
+    },
     tools::observations::{
         FetchGeoRecentRequest, FetchHotspotRecentRequest, FetchNotableRecentRequest,
         FetchRegionRecentRequest,
@@ -99,6 +102,60 @@ impl RublClient {
         Ok(CallToolResult::success(vec![response]))
     }
 
+    #[tool(
+        description = "Fetch birding hotspots for an eBird region. Returns hotspot names, coordinates, and recent activity statistics. Use for finding birding locations or exploring birding areas.",
+        annotations(title = "Region hotspots", read_only_hint = true)
+    )]
+    async fn fetch_region_hotspots(
+        &self,
+        Parameters(req): Parameters<FetchRegionHotspotsRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch nearby birding hotspots by geographic coordinates. Returns hotspot names, coordinates, and recent activity statistics. Use for finding nearby birding locations or exploring birding areas.",
+        annotations(title = "Nearby hotspots", read_only_hint = true)
+    )]
+    async fn fetch_nearby_hotspots(
+        &self,
+        Parameters(req): Parameters<FetchNearbyHotspotsRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch information about a specific eBird hotspot by location ID. Returns hotspot name, coordinates, and recent activity statistics. Use for detailed hotspot information or spotting trends.",
+        annotations(title = "Hotspot info", read_only_hint = true)
+    )]
+    async fn fetch_hotspot_info(
+        &self,
+        Parameters(req): Parameters<FetchHotspotInfoRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
     // #[tool(
     //     description = "Look up eBird region metadata (name, type, bounds, parent). Use when you need to resolve or validate a region code (e.g. US-NC) or get geographic bounds.",
     //     annotations(title = "Region info", read_only_hint = true)
@@ -110,14 +167,6 @@ impl RublClient {
     //     annotations(title = "Subregions", read_only_hint = true)
     // )]
     // async fn list_subregions(&self) {}
-
-    // #[tool(
-    //     description = "Find eBird hotspots (birding locations) by place name or coordinates. Use for queries like 'Where should I go birding in [location]?', 'Best birding spots near [place]', 'Top birding locations in [area]', or 'Where to bird in [region]'. Accepts latitude/longitude coordinates - for location names, geocode first (use web search or other tools to get coordinates). Optional radius (km) and back (days, 1-30) to filter results. Returns list of eBird hotspots with names, coordinates, and recent activity.",
-    //     annotations(title = "Nearby hotspots", read_only_hint = true)
-    // )]
-    // async fn fetch_nearby_hotspots(&self) {
-
-    // }
 }
 
 #[tool_handler]

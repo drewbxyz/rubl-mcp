@@ -20,9 +20,11 @@ impl ApiClient {
 
     pub async fn send<E: Endpoint>(&self, endpoint: E) -> Result<E::Response, reqwest::Error> {
         let url = format!("{}/{}", BASE_URL, endpoint.path());
-        let request = self
-            .http
-            .request(E::METHOD, url)
+        let mut request = self.http.request(E::METHOD, url);
+        if let Some(fmt) = endpoint.format() {
+            request = request.query(&[("fmt", fmt)]);
+        }
+        let request = request
             .query(endpoint.query())
             .header("X-eBirdApiToken", &self.api_key);
 

@@ -30,6 +30,7 @@ pub type RareBird = Observation;
 // Request: Fetch recent observations for a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchRegionRecentRequest {
+    #[serde(skip_serializing)]
     #[schemars(description = "eBird region code (e.g., US-NC)")]
     pub region_code: String,
     #[schemars(
@@ -45,8 +46,8 @@ impl Endpoint for FetchRegionRecentRequest {
 
     const METHOD: Method = Method::GET;
 
-    fn path(&self) -> &str {
-        "data/obs/region/recent"
+    fn path(&self) -> String {
+        format!("data/obs/{}/recent", self.region_code)
     }
 
     fn query(&self) -> &Self::Query {
@@ -74,8 +75,8 @@ impl Endpoint for FetchGeoRecentRequest {
 
     const METHOD: Method = Method::GET;
 
-    fn path(&self) -> &str {
-        "data/obs/geo/recent"
+    fn path(&self) -> String {
+        "data/obs/geo/recent".into()
     }
 
     fn query(&self) -> &Self::Query {
@@ -86,6 +87,7 @@ impl Endpoint for FetchGeoRecentRequest {
 // Request: Fetch notable/rare bird observations for a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchNotableRecentRequest {
+    #[serde(skip_serializing)]
     #[schemars(description = "eBird region code (e.g., US-NC)")]
     pub region_code: String,
     #[schemars(
@@ -101,8 +103,8 @@ impl Endpoint for FetchNotableRecentRequest {
 
     const METHOD: Method = Method::GET;
 
-    fn path(&self) -> &str {
-        "data/obs/region/recent/notable"
+    fn path(&self) -> String {
+        format!("data/obs/{}/recent/notable", self.region_code)
     }
 
     fn query(&self) -> &Self::Query {
@@ -113,6 +115,7 @@ impl Endpoint for FetchNotableRecentRequest {
 // Request: Fetch recent observations at a specific hotspot
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchHotspotRecentRequest {
+    #[serde(skip_serializing)]
     #[schemars(description = "eBird hotspot location ID (e.g., L123456)")]
     pub loc_id: String,
     #[schemars(
@@ -128,8 +131,8 @@ impl Endpoint for FetchHotspotRecentRequest {
 
     const METHOD: Method = Method::GET;
 
-    fn path(&self) -> &str {
-        "data/obs/hotspot/recent"
+    fn path(&self) -> String {
+        format!("data/obs/hotspot/{}/recent", self.loc_id)
     }
 
     fn query(&self) -> &Self::Query {
