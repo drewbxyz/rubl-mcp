@@ -1,5 +1,6 @@
 {
-  "manifest_version": "0.3",
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/refs/heads/main/schemas/mcpb-manifest-v0.4.schema.json",
+  "manifest_version": "0.4",
   "name": "rubl",
   "display_name": "Rubl - eBird API MCP Server",
   "version": "0.1.0-alpha.5",
@@ -28,9 +29,7 @@
     "api"
   ],
   "license": "MIT",
-  "privacy_policies": [
-    "https://github.com/drewbxyz/rubl#privacy--security"
-  ],
+  "privacy_policies": ["https://github.com/drewbxyz/rubl#privacy--security"],
   "server": {
     "type": "binary",
     "entry_point": "server/rubl",
@@ -52,12 +51,44 @@
       "description": "List subregions (states, counties, etc.) under an eBird region. Use to drill down from country to state to county or to enumerate areas within a region."
     },
     {
-      "name": "fetch_rare",
+      "name": "fetch_notable_recent",
       "description": "Fetch recently reported notable/rare bird sightings for an eBird region. Returns species, location, date, and count. Use for rarity alerts or recent notable observations."
     },
     {
-      "name": "get_nearby_hotspots",
-      "description": "Find eBird hotspots (birding locations) by coordinates. Accepts latitude/longitude and optional radius (km) and back (days, 1-30) to filter results. Returns list of eBird hotspots with names, coordinates, and recent activity."
+      "name": "fetch_region_recent",
+      "description": "Fetch recently reported bird sightings for an eBird region. Returns species, location, date, and count. Use for recent region activity or spotting trends."
+    },
+    {
+      "name": "fetch_geo_recent",
+      "description": "Fetch recently reported bird sightings by geographic coordinates. Returns species, location, date, and count. Use for recent observations or spotting trends near a specific location."
+    },
+    {
+      "name": "fetch_species_recent",
+      "description": "Fetch recent observations of a specific species in a region. Returns observations with location, date, and count. Use for tracking a specific bird species or finding recent sightings."
+    },
+    {
+      "name": "fetch_species_nearest",
+      "description": "Find nearest recent observations of a specific species by geographic coordinates. Returns observations with location, date, count, and distance. Use for finding where a species was recently seen nearby."
+    },
+    {
+      "name": "fetch_historic",
+      "description": "Fetch historic observations on a specific date in a region. Returns observations from exactly that date. Use for exploring what was seen on a particular day in the past."
+    },
+    {
+      "name": "fetch_region_hotspots",
+      "description": "Fetch birding hotspots for an eBird region. Returns hotspot names, coordinates, and recent activity statistics. Use for finding birding locations or exploring birding areas."
+    },
+    {
+      "name": "fetch_nearby_hotspots",
+      "description": "Fetch nearby birding hotspots by geographic coordinates. Returns hotspot names, coordinates, and recent activity statistics. Use for finding nearby birding locations or exploring birding areas."
+    },
+    {
+      "name": "fetch_hotspot_info",
+      "description": "Fetch information about a specific eBird hotspot by location ID. Returns hotspot name, coordinates, and recent activity statistics. Use for detailed hotspot information or spotting trends."
+    },
+    {
+      "name": "get_trip_planning_guide",
+      "description": "Get guidelines and best practices for planning birding trips. Returns structured recommendations on timing, locations, breaks, and observation techniques. Use when helping plan day trips or multi-stop birding excursions."
     }
   ],
   "tools_generated": false,
@@ -65,16 +96,13 @@
     "ebird_api_key": {
       "type": "string",
       "title": "eBird API Key",
-      "description": "Your eBird API key. Get one free at https://ebird.org/api/keygen",
+      "description": "Your eBird API key",
       "sensitive": true,
       "required": true
     }
   },
   "compatibility": {
     "claude_desktop": ">=0.10.0",
-    "platforms": [
-      "darwin",
-      "win32"
-    ]
+    "platforms": ["darwin", "win32"]
   }
 }

@@ -1,8 +1,6 @@
 mod api;
 mod content;
-mod prompts;
 mod server;
-
 mod tools;
 
 use anyhow::{Context, Result};
@@ -12,8 +10,8 @@ use server::RublClient;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let api_key = std::env::var("EBIRD_API_KEY")
-        .context("EBIRD_API_KEY environment variable is required")?;
+    let api_key =
+        std::env::var("EBIRD_API_KEY").context("EBIRD_API_KEY environment variable is required")?;
 
     let service = RublClient::new(api_key)
         .serve(stdio())

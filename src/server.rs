@@ -1,15 +1,9 @@
 use rmcp::{
-    ErrorData as McpError, RoleServer, ServerHandler,
-    handler::server::{
-        router::prompt::PromptRouter,
-        tool::ToolRouter,
-        wrapper::Parameters,
-    },
-    model::*, prompt, prompt_handler, prompt_router,
-    service::RequestContext, tool, tool_handler, tool_router,
+    ErrorData as McpError, ServerHandler,
+    handler::server::{tool::ToolRouter, wrapper::Parameters},
+    model::*,
+    tool, tool_handler, tool_router,
 };
-
-use serde_json::Value;
 
 use crate::{
     api::client::ApiClient,
@@ -18,17 +12,17 @@ use crate::{
         FetchHotspotInfoRequest, FetchNearbyHotspotsRequest, FetchRegionHotspotsRequest,
     },
     tools::observations::{
-        FetchGeoRecentRequest, FetchHistoricRequest, FetchHotspotRecentRequest,
+        FetchGeoRecentRequest, FetchHistoricRequest,
         FetchNotableRecentRequest, FetchRegionRecentRequest, FetchSpeciesNearestRequest,
         FetchSpeciesRecentRequest,
     },
     tools::region::{GetRegionInfoRequest, GetSubRegionsRequest},
+    tools::trip,
 };
 
 #[derive(Clone)]
 pub struct RublClient {
     tool_router: ToolRouter<Self>,
-    prompt_router: PromptRouter<Self>,
     client: ApiClient,
 }
 
@@ -37,7 +31,6 @@ impl RublClient {
     pub fn new(api_key: String) -> Self {
         Self {
             tool_router: Self::tool_router(),
-            prompt_router: Self::prompt_router(),
             client: ApiClient::new(api_key),
         }
     }
@@ -65,17 +58,6 @@ impl RublClient {
     async fn fetch_notable_recent(
         &self,
         Parameters(req): Parameters<FetchNotableRecentRequest>,
-    ) -> Result<CallToolResult, McpError> {
-        self.handle_request(req).await
-    }
-
-    #[tool(
-        description = "Fetch recently reported bird sightings at a specific eBird hotspot. Returns species, location, date, and count. Use for recent hotspot activity or spotting trends.",
-        annotations(title = "Hotspot activity", read_only_hint = true)
-    )]
-    async fn fetch_hotspot_recent(
-        &self,
-        Parameters(req): Parameters<FetchHotspotRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
         self.handle_request(req).await
     }
@@ -189,39 +171,29 @@ impl RublClient {
     ) -> Result<CallToolResult, McpError> {
         self.handle_request(req).await
     }
-}
 
-#[prompt_router]
-impl RublClient {
-    #[prompt(
-        title = "Plan Birding Day",
-        description = "Create an optimized birding itinerary for a day trip. Returns a structured hour-by-hour schedule with locations, target species, and tips based on recent sightings and hotspot data."
-    )]
-    async fn plan_birding_day(
-        &self,
-        Parameters(arguments): Parameters<Option<serde_json::Map<String, Value>>>,
-    ) -> Result<GetPromptResult, McpError> {
-        crate::prompts::trip::plan_birding_day(&self.client, &arguments.unwrap_or_default())
-            .await
-            .map_err(|e| McpError::internal_error(e, None))
-    }
+    #[tool(
+        description = "Get guidelines and best practices for planning birding trips/itineraries. Returns structured 
+recommendations on optimal timing, location sequencing, breaks, pacing, and 
+observation techniques. Use this tool when:
+- Creating or optimizing a birding itinerary or trip plan
+- The user is planning a birding adventure and needs guidance on how to structure it
+- Helping a user maximize their birding experience (species count, efficiency, etc.)
+- Planning multi-stop or multi-day birding trips
+- Any request involving birding trip planning that would benefit from expert guidance 
+  on best practices
 
-    #[prompt(
-        title = "Find Species",
-        description = "Find the best locations and times to see a specific bird species. Returns recommendations based on recent sightings, habitat preferences, and identification tips."
+Returns recommendations on: ideal start times, duration recommendations per location, 
+optimal stop sequencing, break timing, observation methodology, and pacing strategies.",
+        annotations(title = "Trip planning guide", read_only_hint = true)
     )]
-    async fn find_species(
-        &self,
-        Parameters(arguments): Parameters<Option<serde_json::Map<String, Value>>>,
-    ) -> Result<GetPromptResult, McpError> {
-        crate::prompts::trip::find_species(&self.client, &arguments.unwrap_or_default())
-            .await
-            .map_err(|e| McpError::internal_error(e, None))
+    async fn get_trip_planning_guide(&self) -> Result<CallToolResult, McpError> {
+        let guidelines = trip::get_trip_planning_guidelines();
+        Ok(CallToolResult::success(vec![Content::text(guidelines)]))
     }
 }
 
 #[tool_handler]
-#[prompt_handler]
 impl ServerHandler for RublClient {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
@@ -232,7 +204,6 @@ impl ServerHandler for RublClient {
             ),
             capabilities: ServerCapabilities::builder()
                 .enable_tools()
-                .enable_prompts()
                 .build(),
             ..Default::default()
         }

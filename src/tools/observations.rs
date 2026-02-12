@@ -112,34 +112,6 @@ impl Endpoint for FetchNotableRecentRequest {
     }
 }
 
-// Request: Fetch recent observations at a specific hotspot
-#[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct FetchHotspotRecentRequest {
-    #[serde(skip_serializing)]
-    #[schemars(description = "eBird hotspot location ID (e.g., L123456)")]
-    pub loc_id: String,
-    #[schemars(
-        description = "Number of days back to fetch observations",
-        range(min = 1, max = 30)
-    )]
-    pub back: Option<u32>,
-}
-
-impl Endpoint for FetchHotspotRecentRequest {
-    type Query = FetchHotspotRecentRequest;
-    type Response = Vec<Observation>;
-
-    const METHOD: Method = Method::GET;
-
-    fn path(&self) -> String {
-        format!("data/obs/hotspot/{}/recent", self.loc_id)
-    }
-
-    fn query(&self) -> &Self::Query {
-        self
-    }
-}
-
 // Request: Fetch recent observations of a specific species in a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchSpeciesRecentRequest {
