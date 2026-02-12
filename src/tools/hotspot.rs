@@ -116,7 +116,7 @@ impl Endpoint for FetchHotspotInfoRequest {
     const METHOD: Method = Method::GET;
 
     fn path(&self) -> String {
-        format!("ref/hotspot/{}", self.loc_id)
+        format!("ref/hotspot/info/{}", self.loc_id)
     }
 
     fn query(&self) -> &Self::Query {
