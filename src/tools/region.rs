@@ -16,7 +16,7 @@ pub struct GetRegionInfoRequest {
 }
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-pub struct GetSubRegionsRequest {
+pub struct ListSubRegionsRequest {
     #[schemars(description = "eBird region code (e.g., US-NC)")]
     pub region_code: String,
 }
