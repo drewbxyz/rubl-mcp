@@ -4,7 +4,12 @@ use rmcp::{
 };
 
 use crate::{
-    api::client::ApiClient, content::ToContent, tools::observations::FetchNotableRecentRequest,
+    api::client::ApiClient,
+    content::ToContent,
+    tools::observations::{
+        FetchGeoRecentRequest, FetchHotspotRecentRequest, FetchNotableRecentRequest,
+        FetchRegionRecentRequest,
+    },
 };
 
 #[derive(Clone)]
@@ -29,6 +34,60 @@ impl RublClient {
     async fn fetch_notable_recent(
         &self,
         Parameters(req): Parameters<FetchNotableRecentRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch recently reported bird sightings at a specific eBird hotspot. Returns species, location, date, and count. Use for recent hotspot activity or spotting trends.",
+        annotations(title = "Hotspot activity", read_only_hint = true)
+    )]
+    async fn fetch_hotspot_recent(
+        &self,
+        Parameters(req): Parameters<FetchHotspotRecentRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch recently reported bird sightings for an eBird region. Returns species, location, date, and count. Use for recent region activity or spotting trends.",
+        annotations(title = "Region activity", read_only_hint = true)
+    )]
+    async fn fetch_region_recent(
+        &self,
+        Parameters(req): Parameters<FetchRegionRecentRequest>,
+    ) -> Result<CallToolResult, McpError> {
+        let response = self
+            .client
+            .send(req)
+            .await
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .to_content()
+            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+        Ok(CallToolResult::success(vec![response]))
+    }
+
+    #[tool(
+        description = "Fetch recently reported bird sightings by geographic coordinates. Returns species, location, date, and count. Use for recent observations or spotting trends near a specific location.",
+        annotations(title = "Geographic observations", read_only_hint = true)
+    )]
+    async fn fetch_geo_recent(
+        &self,
+        Parameters(req): Parameters<FetchGeoRecentRequest>,
     ) -> Result<CallToolResult, McpError> {
         let response = self
             .client
