@@ -1,3 +1,24 @@
+/// Returns structured birding trip planning guidelines.
+///
+/// Provides comprehensive best practices for planning birding trips, including:
+/// - Optimal timing (dawn, midday, evening considerations)
+/// - Location sequencing strategies
+/// - Break and meal planning
+/// - Hotspot prioritization
+/// - Species targeting
+/// - Weather considerations
+/// - Itinerary structure
+///
+/// # Examples
+///
+/// ```
+/// use rubl::tools::trip::get_trip_planning_guidelines;
+///
+/// let guidelines = get_trip_planning_guidelines();
+/// assert!(guidelines.contains("Dawn"));
+/// assert!(guidelines.contains("Time of Day"));
+/// assert!(guidelines.contains("Location Sequencing"));
+/// ```
 pub fn get_trip_planning_guidelines() -> String {
     r#"# Birding Trip Planning Guidelines
 

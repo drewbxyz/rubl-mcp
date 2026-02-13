@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::endpoint::Endpoint;
 
-// Common observation response structure
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Observation {
     #[serde(rename = "comName")]
@@ -24,10 +23,9 @@ pub struct Observation {
     pub longitude: Option<f64>,
 }
 
-// Alias for notable/rare birds (same structure as Observation)
+// Type alias for notable/rare birds (same structure, semantically distinct).
 pub type RareBird = Observation;
 
-// Request: Fetch recent observations for a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchRegionRecentRequest {
     #[serde(skip_serializing)]
@@ -55,7 +53,6 @@ impl Endpoint for FetchRegionRecentRequest {
     }
 }
 
-// Request: Fetch recent observations by geographic coordinates
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchGeoRecentRequest {
     #[schemars(description = "Latitude")]
@@ -84,7 +81,6 @@ impl Endpoint for FetchGeoRecentRequest {
     }
 }
 
-// Request: Fetch notable/rare bird observations for a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchNotableRecentRequest {
     #[serde(skip_serializing)]
@@ -112,7 +108,6 @@ impl Endpoint for FetchNotableRecentRequest {
     }
 }
 
-// Request: Fetch recent observations of a specific species in a region
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchSpeciesRecentRequest {
     #[serde(skip_serializing)]
@@ -143,7 +138,6 @@ impl Endpoint for FetchSpeciesRecentRequest {
     }
 }
 
-// Request: Fetch nearest recent observations of a specific species
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchSpeciesNearestRequest {
     #[serde(skip_serializing)]
@@ -177,7 +171,6 @@ impl Endpoint for FetchSpeciesNearestRequest {
     }
 }
 
-// Request: Fetch historic observations on a specific date
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct FetchHistoricRequest {
     #[serde(skip_serializing)]
@@ -209,5 +202,241 @@ impl Endpoint for FetchHistoricRequest {
 
     fn query(&self) -> &Self::Query {
         &()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod fetch_region_recent {
+        use super::*;
+
+        #[test]
+        fn path_includes_region_code() {
+            let req = FetchRegionRecentRequest {
+                region_code: "US-NC".into(),
+                back: None,
+            };
+            assert_eq!(req.path(), "data/obs/US-NC/recent");
+        }
+
+        #[test]
+        fn path_with_different_region_code() {
+            let req = FetchRegionRecentRequest {
+                region_code: "US-CA".into(),
+                back: None,
+            };
+            assert_eq!(req.path(), "data/obs/US-CA/recent");
+        }
+
+        #[test]
+        fn query_includes_back_parameter_when_present() {
+            let req = FetchRegionRecentRequest {
+                region_code: "US-NC".into(),
+                back: Some(7),
+            };
+            // Verify the query can be serialized and contains back parameter
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["back"], 7);
+        }
+
+        #[test]
+        fn query_omits_back_parameter_when_none() {
+            let req = FetchRegionRecentRequest {
+                region_code: "US-NC".into(),
+                back: None,
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert!(serialized["back"].is_null());
+        }
+    }
+
+    mod fetch_geo_recent {
+        use super::*;
+
+        #[test]
+        fn path_is_constant() {
+            let req = FetchGeoRecentRequest {
+                lat: 35.9132,
+                lng: -79.0558,
+                back: None,
+            };
+            assert_eq!(req.path(), "data/obs/geo/recent");
+        }
+
+        #[test]
+        fn query_includes_coordinates() {
+            let req = FetchGeoRecentRequest {
+                lat: 35.9132,
+                lng: -79.0558,
+                back: None,
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["lat"], 35.9132);
+            assert_eq!(serialized["lng"], -79.0558);
+        }
+
+        #[test]
+        fn query_includes_back_parameter_when_present() {
+            let req = FetchGeoRecentRequest {
+                lat: 35.9132,
+                lng: -79.0558,
+                back: Some(14),
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["back"], 14);
+        }
+    }
+
+    mod fetch_notable_recent {
+        use super::*;
+
+        #[test]
+        fn path_includes_region_code_and_notable() {
+            let req = FetchNotableRecentRequest {
+                region_code: "US-NC".into(),
+                back: None,
+            };
+            assert_eq!(req.path(), "data/obs/US-NC/recent/notable");
+        }
+
+        #[test]
+        fn query_includes_back_parameter() {
+            let req = FetchNotableRecentRequest {
+                region_code: "US-NC".into(),
+                back: Some(3),
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["back"], 3);
+        }
+    }
+
+    mod fetch_species_recent {
+        use super::*;
+
+        #[test]
+        fn path_includes_region_and_species() {
+            let req = FetchSpeciesRecentRequest {
+                region_code: "US-NC".into(),
+                species_code: "barswa".into(),
+                back: None,
+            };
+            assert_eq!(req.path(), "data/obs/US-NC/recent/barswa");
+        }
+
+        #[test]
+        fn path_with_different_species() {
+            let req = FetchSpeciesRecentRequest {
+                region_code: "US-CA".into(),
+                species_code: "caltow".into(),
+                back: Some(7),
+            };
+            assert_eq!(req.path(), "data/obs/US-CA/recent/caltow");
+        }
+
+        #[test]
+        fn query_serializes_back_parameter() {
+            let req = FetchSpeciesRecentRequest {
+                region_code: "US-NC".into(),
+                species_code: "barswa".into(),
+                back: Some(10),
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["back"], 10);
+        }
+    }
+
+    mod fetch_species_nearest {
+        use super::*;
+
+        #[test]
+        fn path_includes_species_code() {
+            let req = FetchSpeciesNearestRequest {
+                species_code: "barswa".into(),
+                lat: 35.9132,
+                lng: -79.0558,
+                dist: None,
+                back: None,
+            };
+            assert_eq!(req.path(), "data/nearest/geo/recent/barswa");
+        }
+
+        #[test]
+        fn query_includes_coordinates() {
+            let req = FetchSpeciesNearestRequest {
+                species_code: "barswa".into(),
+                lat: 35.9132,
+                lng: -79.0558,
+                dist: None,
+                back: None,
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["lat"], 35.9132);
+            assert_eq!(serialized["lng"], -79.0558);
+        }
+
+        #[test]
+        fn query_includes_optional_parameters() {
+            let req = FetchSpeciesNearestRequest {
+                species_code: "barswa".into(),
+                lat: 35.9132,
+                lng: -79.0558,
+                dist: Some(25),
+                back: Some(7),
+            };
+            let serialized = serde_json::to_value(req.query()).unwrap();
+            assert_eq!(serialized["dist"], 25);
+            assert_eq!(serialized["back"], 7);
+        }
+    }
+
+    mod fetch_historic {
+        use super::*;
+
+        #[test]
+        fn path_formats_date_correctly() {
+            let req = FetchHistoricRequest {
+                region_code: "US-NC".into(),
+                year: 2023,
+                month: 1,
+                day: 15,
+            };
+            assert_eq!(req.path(), "data/obs/US-NC/historic/2023/1/15");
+        }
+
+        #[test]
+        fn path_formats_single_digit_date() {
+            let req = FetchHistoricRequest {
+                region_code: "US-NC".into(),
+                year: 2023,
+                month: 5,
+                day: 3,
+            };
+            assert_eq!(req.path(), "data/obs/US-NC/historic/2023/5/3");
+        }
+
+        #[test]
+        fn path_formats_double_digit_date() {
+            let req = FetchHistoricRequest {
+                region_code: "US-CA".into(),
+                year: 2022,
+                month: 12,
+                day: 31,
+            };
+            assert_eq!(req.path(), "data/obs/US-CA/historic/2022/12/31");
+        }
+
+        #[test]
+        fn query_returns_empty_tuple() {
+            let req = FetchHistoricRequest {
+                region_code: "US-NC".into(),
+                year: 2023,
+                month: 1,
+                day: 15,
+            };
+            // Ensure no query params are serialized (should be unit type)
+            assert_eq!(req.query(), &());
+        }
     }
 }

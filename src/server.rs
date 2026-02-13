@@ -7,7 +7,9 @@ use rmcp::{
 
 use crate::{
     api::client::ApiClient,
+    api::error::ApiError,
     content::ToContent,
+    logging,
     tools::hotspot::{
         FetchHotspotInfoRequest, FetchNearbyHotspotsRequest, FetchRegionHotspotsRequest,
     },
@@ -26,6 +28,44 @@ pub struct RublClient {
     client: ApiClient,
 }
 
+/// Converts an `ApiError` to an appropriate MCP error.
+///
+/// Maps 4xx client errors to `invalid_params` and 5xx/network errors to
+/// `internal_error`. Logs to stderr for MCP client debugging.
+fn api_error_to_mcp(error: ApiError) -> McpError {
+    // Log to stderr for debugging (will appear in MCP client logs)
+    logging::error(format!("API error: {}", error));
+
+    match error {
+        ApiError::HttpError { status, body } => {
+            if status.is_client_error() {
+                // 4xx = client mistakes (bad region code, invalid params, etc.)
+                McpError::invalid_params(
+                    format!("eBird API request failed ({}): {}", status, body),
+                    None,
+                )
+            } else {
+                McpError::internal_error(
+                    format!("eBird API server error ({}): {}", status, body),
+                    None,
+                )
+            }
+        }
+        ApiError::Network(e) => McpError::internal_error(
+            format!("Failed to connect to eBird API: {}", e),
+            None,
+        ),
+        ApiError::Deserialization(e) => McpError::internal_error(
+            format!("Failed to parse eBird API response: {}", e),
+            None,
+        ),
+        ApiError::Serialization(e) => McpError::invalid_params(
+            format!("Invalid request parameters: {}", e),
+            None,
+        ),
+    }
+}
+
 #[tool_router]
 impl RublClient {
     pub fn new(api_key: String) -> Self {
@@ -35,7 +75,6 @@ impl RublClient {
         }
     }
 
-    /// Helper method to handle common request/response pattern
     async fn handle_request<E>(&self, req: E) -> Result<CallToolResult, McpError>
     where
         E: crate::api::endpoint::Endpoint,
@@ -43,11 +82,14 @@ impl RublClient {
     {
         let response = self
             .client
-            .send(req)
+            .send(&req)
             .await
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?
+            .map_err(api_error_to_mcp)?
             .to_content()
-            .map_err(|e| McpError::internal_error(e.to_string(), None))?;
+            .map_err(|e| {
+                logging::error(format!("Content conversion error: {}", e));
+                McpError::internal_error(e.to_string(), None)
+            })?;
         Ok(CallToolResult::success(vec![response]))
     }
 
@@ -206,6 +248,95 @@ impl ServerHandler for RublClient {
                 .enable_tools()
                 .build(),
             ..Default::default()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use reqwest::StatusCode;
+
+    mod api_error_to_mcp {
+        use super::*;
+
+        #[test]
+        fn maps_400_status_to_invalid_params() {
+            let error = ApiError::HttpError {
+                status: StatusCode::BAD_REQUEST,
+                body: "Invalid region code".into(),
+            };
+            let mcp_error = api_error_to_mcp(error);
+            // Check that error message contains the status and body
+            assert!(mcp_error.message.contains("400"));
+            assert!(mcp_error.message.contains("Invalid region code"));
+        }
+
+        #[test]
+        fn maps_404_status_to_invalid_params() {
+            let error = ApiError::HttpError {
+                status: StatusCode::NOT_FOUND,
+                body: "Region not found".into(),
+            };
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("404"));
+            assert!(mcp_error.message.contains("Region not found"));
+        }
+
+        #[test]
+        fn maps_422_status_to_invalid_params() {
+            let error = ApiError::HttpError {
+                status: StatusCode::UNPROCESSABLE_ENTITY,
+                body: "Invalid parameters".into(),
+            };
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("422"));
+            assert!(mcp_error.message.contains("Invalid parameters"));
+        }
+
+        #[test]
+        fn maps_500_status_to_internal_error() {
+            let error = ApiError::HttpError {
+                status: StatusCode::INTERNAL_SERVER_ERROR,
+                body: "Server error".into(),
+            };
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("500"));
+            assert!(mcp_error.message.contains("Server error"));
+        }
+
+        #[test]
+        fn maps_503_status_to_internal_error() {
+            let error = ApiError::HttpError {
+                status: StatusCode::SERVICE_UNAVAILABLE,
+                body: "Service unavailable".into(),
+            };
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("503"));
+            assert!(mcp_error.message.contains("Service unavailable"));
+        }
+
+        #[tokio::test]
+        async fn network_error_becomes_internal_error() {
+            // Create a network error by attempting to connect to an invalid domain
+            let reqwest_error = reqwest::Client::new()
+                .get("http://invalid-domain-that-does-not-exist-12345.com")
+                .send()
+                .await
+                .unwrap_err();
+
+            let error = ApiError::Network(reqwest_error);
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("Failed to connect to eBird API"));
+        }
+
+        #[test]
+        fn serialization_error_becomes_invalid_params() {
+            // Create a serialization error by parsing invalid JSON
+            let json_error = serde_json::from_str::<serde_json::Value>("{invalid}").unwrap_err();
+            let error = ApiError::Serialization(json_error);
+            let mcp_error = api_error_to_mcp(error);
+            assert!(mcp_error.message.contains("Invalid request parameters"));
         }
     }
 }
