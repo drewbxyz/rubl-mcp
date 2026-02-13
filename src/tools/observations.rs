@@ -147,7 +147,10 @@ pub struct FetchSpeciesNearestRequest {
     pub lat: f64,
     #[schemars(description = "Longitude")]
     pub lng: f64,
-    #[schemars(description = "Search radius in kilometers (max 50)", range(min = 1, max = 50))]
+    #[schemars(
+        description = "Search radius in kilometers (max 50)",
+        range(min = 1, max = 50)
+    )]
     pub dist: Option<u32>,
     #[schemars(
         description = "Number of days back to search",

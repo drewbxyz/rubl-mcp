@@ -68,10 +68,16 @@ impl ApiClient {
         let status = response.status();
         if !status.is_success() {
             // Capture the error response body for better error messages
-            let body = response.text().await.unwrap_or_else(|_| String::from("(unable to read response body)"));
+            let body = response
+                .text()
+                .await
+                .unwrap_or_else(|_| String::from("(unable to read response body)"));
             return Err(ApiError::HttpError { status, body });
         }
 
-        response.json::<E::Response>().await.map_err(ApiError::Deserialization)
+        response
+            .json::<E::Response>()
+            .await
+            .map_err(ApiError::Deserialization)
     }
 }

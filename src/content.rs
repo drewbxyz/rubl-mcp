@@ -15,9 +15,9 @@ impl<T: serde::Serialize> ToContent for T {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tools::observations::Observation;
     use crate::tools::hotspot::Hotspot;
-    use crate::tools::region::{RegionInfo, RegionType, Bounds};
+    use crate::tools::observations::Observation;
+    use crate::tools::region::{Bounds, RegionInfo, RegionType};
 
     mod observation_to_content {
         use super::*;

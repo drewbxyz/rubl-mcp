@@ -15,11 +15,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         logging::panic(panic_info);
     }));
 
-    let api_key = std::env::var("EBIRD_API_KEY")
-        .map_err(|_| {
-            logging::error("EBIRD_API_KEY environment variable is required");
-            "EBIRD_API_KEY environment variable is required"
-        })?;
+    let api_key = std::env::var("EBIRD_API_KEY").map_err(|_| {
+        logging::error("EBIRD_API_KEY environment variable is required");
+        "EBIRD_API_KEY environment variable is required"
+    })?;
 
     logging::info("Starting MCP server");
 

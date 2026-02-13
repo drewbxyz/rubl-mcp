@@ -14,9 +14,8 @@ use crate::{
         FetchHotspotInfoRequest, FetchNearbyHotspotsRequest, FetchRegionHotspotsRequest,
     },
     tools::observations::{
-        FetchGeoRecentRequest, FetchHistoricRequest,
-        FetchNotableRecentRequest, FetchRegionRecentRequest, FetchSpeciesNearestRequest,
-        FetchSpeciesRecentRequest,
+        FetchGeoRecentRequest, FetchHistoricRequest, FetchNotableRecentRequest,
+        FetchRegionRecentRequest, FetchSpeciesNearestRequest, FetchSpeciesRecentRequest,
     },
     tools::region::{GetRegionInfoRequest, GetSubRegionsRequest},
     tools::trip,
@@ -51,18 +50,15 @@ fn api_error_to_mcp(error: ApiError) -> McpError {
                 )
             }
         }
-        ApiError::Network(e) => McpError::internal_error(
-            format!("Failed to connect to eBird API: {}", e),
-            None,
-        ),
-        ApiError::Deserialization(e) => McpError::internal_error(
-            format!("Failed to parse eBird API response: {}", e),
-            None,
-        ),
-        ApiError::Serialization(e) => McpError::invalid_params(
-            format!("Invalid request parameters: {}", e),
-            None,
-        ),
+        ApiError::Network(e) => {
+            McpError::internal_error(format!("Failed to connect to eBird API: {}", e), None)
+        }
+        ApiError::Deserialization(e) => {
+            McpError::internal_error(format!("Failed to parse eBird API response: {}", e), None)
+        }
+        ApiError::Serialization(e) => {
+            McpError::invalid_params(format!("Invalid request parameters: {}", e), None)
+        }
     }
 }
 
